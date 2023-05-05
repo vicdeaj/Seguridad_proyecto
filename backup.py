@@ -7,6 +7,23 @@ import shutil
 import tarfile
 import uuid
 import subprocess
+import time
+
+# backup semanal
+
+def make_tarfile(output_filename, s_dir):
+    with tarfile.open(output_filename, "w:gz") as tar:
+        tar.add(s_dir, arcname=os.path.basename(s_dir))
+
+
+# coje dos directorios, y hace una backup del primero en el segundo
+def crear_backup_completa(source, destination):
+    nombre_backup = "{}.tar.gpg".format(int(time.time()))
+    path_tarfile = tmp_dir+"/" + "out.tar.gz"
+    make_tarfile(path_tarfile, source)
+    path_encriptado = path_tarfile+".gpg"
+    x = subprocess.run(["gpg","--batch","--no-symkey-cache","--passphrase",password,"-c","-o",path_encriptado, path_tarfile])
+    os.rename(path_encriptado, destination + "/" + nombre_backup)
 
 
 #configparser
@@ -21,76 +38,56 @@ password = config.get("BasicConfig", "password")
 tmp_dir = "/tmp/" + str(uuid.uuid4())
 os.mkdir(tmp_dir) #Guardar el archivo comprimido antes de encriptarlo
 
-#Recogida y comprobación de los argumentos
-# tipo_copia = sys.argv[1]
-# num_args = len(sys.argv) - 1
-# if num_args != 1:
-#     print("Número de argumentos incorrecto, modo de uso: Primer parámetro(-w, -d, -m)")
-#     exit(1)
+# Recogida y comprobación de los argumentos
+tipo_copia = sys.argv[1]
+num_args = len(sys.argv) - 1
+if num_args != 1:
+    print("Número de argumentos incorrecto, modo de uso: Primer parámetro(-w, -d, -m)")
+    exit(1)
 
 # establecer una ocupación máxima de disco (avisar antes de superarlo)
 
-# max_size = 100000000000 #100gb
-# montajes = {} #diccionario montajes
-# with open("/proc/mounts", "r") as f:
-#     for linea in f:
-#         particion, punto_montaje, tipo_fs, opciones, _, _ = linea.split()
-#         montajes[punto_montaje] = particion
-#
-# ocupacion = shutil.disk_usage(montajes[backup_dir])
+max_size = 100000000000 #100gb
+montajes = {} #diccionario montajes
+with open("/proc/mounts", "r") as f:
+    for linea in f:
+        particion, punto_montaje, tipo_fs, opciones, _, _ = linea.split()
+        montajes[punto_montaje] = particion
 
-# if ocupacion.total >= max_size*0.85:
-#     print("Aviso para el administrador, queda poco espacio para guardar las copias de seguridad.\n"
-#           "No se va a realizar ninguna copia de seguridad hasta que el problema esté solucionado.")
-#     exit(1)
+ocupacion = shutil.disk_usage(montajes[backup_dir])
+
+if ocupacion.total >= max_size*0.85:
+    print("Aviso para el administrador, queda poco espacio para guardar las copias de seguridad.\n"
+          "No se va a realizar ninguna copia de seguridad hasta que el problema esté solucionado.")
+    exit(1)
 
 #Programa principal
 
-# if tipo_copia == "-d":
-#     pass
-#
-# if tipo_copia == "-w":
-#     pass
-#
-# if tipo_copia == "-m":
-#     pass
-#
-# print("Argumento mal utilizado, modo de uso: Primer parámetro(-w, -d, -m)")
-# exit(1)
+if tipo_copia == "-d":
+     pass
+
+if tipo_copia == "-w":
+    lista_archivos = os.listdir(backup_dir + "/semanal")
+    n_backups_semanales = len(lista_archivos)
+    backup_mas_vieja = min(lista_archivos)
+    if n_backups_semanales >= 4:
+        os.remove(backup_mas_vieja)
+
+    crear_backup_completa(source_dir, backup_dir + "/semanal")
 
 
-# backup semanal
+if tipo_copia == "-m":
+    lista_archivos = os.listdir(backup_dir + "/mensual")
+    n_backups_semanales = len(lista_archivos)
+    backup_mas_vieja = min(lista_archivos)
 
-def make_tarfile(output_filename, s_dir):
-    with tarfile.open(output_filename, "w:gz") as tar:
-        tar.add(s_dir, arcname=os.path.basename(s_dir))
+    crear_backup_completa(source_dir, backup_dir + "/mensual")
+    exit(1)
 
-
-#key = PBKDF2(password, b"\xfe\xfa"*8, dkLen=32)
-#aes = AES.new(key, AES.MODE_GCM,nonce=b"05"*12)
-
-nombre_backup = "1.tar.gpg"
-
-path_tarfile = tmp_dir+"/" + "out.tar.gz"
-make_tarfile(path_tarfile, source_dir)
-path_encriptado = path_tarfile+".gpg"
-x = subprocess.run(["gpg","--batch","--no-symkey-cache","--passphrase",password,"-c","-o",path_encriptado, path_tarfile])
-os.rename(path_encriptado, backup_dir + "/" + nombre_backup)
-
-#shutil.rmtree(tmp_dir)
-# # para cada archivo
-# for dirpath, dirnames, filenames in os.walk(backup_dir):
-#        for filename in filenames:
-#            path = dirpath + "/" + filename
-#            with open(path, "rb") as file:
-#                contents = file.read()
-#                print(contents)
-#                cipher_contents, tag = aes.encrypt_and_digest(contents)
-#                print(cipher_contents)
-#                print(AES.new(PBKDF2(password, b"\xfe\xfa"*8, dkLen=32),AES.MODE_GCM, nonce=b"05"*12).decrypt_and_verify(cipher_contents,tag))
-#                # escribir contenidos
-#
-#             # abrimos,leemos encriptamos, escribimos en el nuevo lugar
+print("Argumento mal utilizado, modo de uso: Primer parámetro(-w, -d, -m)")
+exit(1)
 
 
-#x = open("archivo", "rb")
+
+
+shutil.rmtree(tmp_dir)
