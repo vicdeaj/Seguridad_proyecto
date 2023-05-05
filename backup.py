@@ -44,6 +44,32 @@ def crear_backup_incremental(source, destination, refs):
     x = subprocess.run(["gpg","--batch","--no-symkey-cache","--passphrase",password,"-c","-o",path_encriptado, path_tarfile])
     os.rename(path_encriptado, destination + "/" + nombre_backup)
 
+def check_espacio_disponible(backup_dir):
+    path_semanal = backup_dir + "/semanal"
+    path_mensual = backup_dir + "/mensual"
+    path_diario = backup_dir + "/diaria"
+
+    ocupacion_total = 0
+    for path in [path_semanal, path_mensual, path_diario]:
+        for dirpath, dirnames, filenames in os.walk(path):
+            for filename in filenames:
+                filepath = os.path.join(dirpath, filename)
+                ocupacion_total += os.path.getsize(filepath)
+
+    return ocupacion_total
+
+
+def check_structura_backup(path):
+    carpetas = os.listdir(path)
+    if "semanal" not in carpetas:
+        os.mkdir(backup_dir + "/semanal")
+
+    if "mensual" not in carpetas:
+        os.mkdir(backup_dir + "/mensual")
+
+    if "diaria" not in carpetas:
+        os.mkdir(backup_dir + "/diaria")
+
 
 #configparser
 configfile = "~/.backupconfig"
@@ -57,21 +83,19 @@ password = config.get("BasicConfig", "password")
 tmp_dir = "/tmp/" + str(uuid.uuid4())
 os.mkdir(tmp_dir) #Guardar el archivo comprimido antes de encriptarlo
 
+
+#Programa principal
+
 # Recogida y comprobación de los argumentos
 tipo_copia = sys.argv[1]
 num_args = len(sys.argv) - 1
 if num_args != 1:
     print("Número de argumentos incorrecto, modo de uso: Primer parámetro(-w, -d, -m)")
-    exit(1)
+    exit(0)
 
 # establecer una ocupación máxima de disco (avisar antes de superarlo)
 
 max_size = 100000000000 #100gb
-montajes = {} #diccionario montajes
-with open("/proc/mounts", "r") as f:
-    for linea in f:
-        particion, punto_montaje, tipo_fs, opciones, _, _ = linea.split()
-        montajes[punto_montaje] = particion
 
 ocupacion_used = check_espacio_disponible(backup_dir)
 if ocupacion_used >= max_size*0.85:
@@ -95,20 +119,22 @@ if tipo_copia == "-d":
 
 
 if tipo_copia == "-w":
-    lista_archivos = os.listdir(backup_dir + "/semanal")
-    n_backups_semanales = len(lista_archivos)
-    backup_mas_vieja = min(lista_archivos)
+    lista_archivos_semanal = os.listdir(backup_dir + "/semanal")
+    n_backups_semanales = len(lista_archivos_semanal)
+    backup_mas_vieja_semanal = min(lista_archivos_semanal)
     if n_backups_semanales >= 4:
-        os.remove(backup_mas_vieja)
+        os.remove(backup_mas_vieja_semanal)
 
     crear_backup_completa(source_dir, backup_dir + "/semanal")
     exit(0)
 
 
 if tipo_copia == "-m":
-    lista_archivos = os.listdir(backup_dir + "/mensual")
-    n_backups_semanales = len(lista_archivos)
-    backup_mas_vieja = min(lista_archivos)
+    lista_archivos_mensual= os.listdir(backup_dir + "/mensual")
+    n_backups_mensual = len(lista_archivos_mensual)
+    backup_mas_vieja_mensual = min(lista_archivos_mensual)
+    if n_backups_mensual >= 12:
+        os.remove(backup_mas_vieja_mensual)
 
     crear_backup_completa(source_dir, backup_dir + "/mensual")
     exit(0)
