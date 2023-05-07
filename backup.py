@@ -16,10 +16,21 @@ def make_tarfile(output_filename, s_dir):
         tar.add(s_dir, arcname=os.path.basename(s_dir))
 
 def make_tarfile_incremental(output_filename, s_dir, reference_filename):
+    #Propuesta de implementación Javimo
+    #fecha_referencia = os.path.getmtime(reference_filename)
     with tarfile.open(output_filename, "w:gz") as tar:
-
-
-
+        #for archivo in os.listdir(s_dir):
+            #ruta_archivo = os.path.join(s_dir, archivo)
+            #Comprobación de si ha sido modificado
+            #fecha_modificacion = os.path.getmt
+            #if fecha_modificacion > fecha_referencia:
+                #Formato de la fecha (no se cual es el bueno, lo modificamos cuando lo hablemos)
+                #fecha_modificacion_legible = time.strftime('%Y-%m-%d_%H-%M-%S', time.localtime(fecha_modificacion))
+                #La manera de nombrar el archivo también la cambiamos que no sé como es ahora mismo
+                #nombre_archivo_copia = f"{archivo}_{fecha_modificacion_legible}.tar.gz"
+                #tar.add(ruta_archivo, arcname=nombre_archivo_copia)
+    
+    
 # coje dos directorios, y hace una backup del primero en el segundo
 def crear_backup_completa(source, destination):
     nombre_backup = "{}.tar.gpg".format(int(time.time()))
