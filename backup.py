@@ -17,6 +17,8 @@ def make_tarfile(output_filename, s_dir):
 
 def make_tarfile_incremental(output_filename, s_dir, reference_filename):
     with tarfile.open(output_filename, "w:gz") as tar:
+        for file in glob.glob(os.path.join(s_dir, '**'), recursive=True):
+            print(file)
 
 
 
@@ -110,9 +112,11 @@ check_structura_backup(backup_dir)
 if tipo_copia == "-d":
     lista_archivos_diaria = os.listdir(backup_dir + "/diaria")
     n_backups_diaria = len(lista_archivos_diaria)
-    backup_mas_vieja_diaria = min(lista_archivos_diaria)
-    if n_backups_diaria >= 7:
-        os.remove(backup_mas_vieja_diaria)
+
+    if n_backups_diaria > 0:
+        backup_mas_vieja_diaria = min(lista_archivos_diaria)
+        if n_backups_diaria >= 7:
+            os.remove(backup_mas_vieja_diaria)
 
     crear_backup_incremental(source_dir, backup_dir + "/diaria", backup_dir + "/semanal")
     exit(0)
@@ -121,9 +125,11 @@ if tipo_copia == "-d":
 if tipo_copia == "-w":
     lista_archivos_semanal = os.listdir(backup_dir + "/semanal")
     n_backups_semanales = len(lista_archivos_semanal)
-    backup_mas_vieja_semanal = min(lista_archivos_semanal)
-    if n_backups_semanales >= 4:
-        os.remove(backup_mas_vieja_semanal)
+
+    if n_backups_semanales > 0:
+        backup_mas_vieja_semanal = min(lista_archivos_semanal)
+        if n_backups_semanales >= 4:
+            os.remove(backup_mas_vieja_semanal)
 
     crear_backup_completa(source_dir, backup_dir + "/semanal")
     exit(0)
@@ -132,9 +138,11 @@ if tipo_copia == "-w":
 if tipo_copia == "-m":
     lista_archivos_mensual= os.listdir(backup_dir + "/mensual")
     n_backups_mensual = len(lista_archivos_mensual)
-    backup_mas_vieja_mensual = min(lista_archivos_mensual)
-    if n_backups_mensual >= 12:
-        os.remove(backup_mas_vieja_mensual)
+
+    if n_backups_mensual > 0:
+        backup_mas_vieja_mensual = min(lista_archivos_mensual)
+        if n_backups_mensual >= 12:
+            os.remove(backup_mas_vieja_mensual)
 
     crear_backup_completa(source_dir, backup_dir + "/mensual")
     exit(0)
