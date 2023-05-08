@@ -39,7 +39,6 @@ def make_tarfile_incremental(output_filename, s_dir, reference_filename):
     # añadimos ese archivo al
 
 
-
 # coje dos directorios, y hace una backup del primero en el segundo
 def crear_backup_completa(source, destination):
     nombre_backup = "{}.tar.gpg".format(int(time.time()))
