@@ -125,6 +125,7 @@ tipo_copia = sys.argv[1]
 num_args = len(sys.argv) - 1
 if num_args != 1:
     print("Número de argumentos incorrecto, modo de uso: Primer parámetro(-w, -d, -m)")
+    shutil.rmtree(tmp_dir)
     exit(0)
 
 # establecer una ocupación máxima de disco (avisar antes de superarlo)
@@ -135,6 +136,7 @@ ocupacion_used = check_espacio_disponible(backup_dir)
 if ocupacion_used >= max_size * 0.85:
     print("Aviso para el administrador, queda poco espacio para guardar las copias de seguridad.\n"
           "No se va a realizar ninguna copia de seguridad hasta que el problema esté solucionado.")
+    shutil.rmtree(tmp_dir)
     exit(0)
 
 # checkear estructura del backupdir
@@ -151,6 +153,7 @@ if tipo_copia == "-d":
             os.remove(backup_dir + "/diaria/" + backup_mas_vieja_diaria)
 
     crear_backup_incremental(source_dir, backup_dir + "/diaria", backup_dir + "/semanal")
+    shutil.rmtree(tmp_dir)
     exit(0)
 
 if tipo_copia == "-w":
@@ -163,6 +166,7 @@ if tipo_copia == "-w":
             os.remove(backup_dir + "/semanal/" + backup_mas_vieja_semanal)
 
     crear_backup_completa(source_dir, backup_dir + "/semanal")
+    shutil.rmtree(tmp_dir)
     exit(0)
 
 if tipo_copia == "-m":
@@ -175,6 +179,7 @@ if tipo_copia == "-m":
             os.remove(backup_dir + "/mensual/" + backup_mas_vieja_mensual)
 
     crear_backup_completa(source_dir, backup_dir + "/mensual")
+    shutil.rmtree(tmp_dir)
     exit(0)
 
 print("Argumento mal utilizado, modo de uso: Primer parámetro(-w, -d, -m)")
