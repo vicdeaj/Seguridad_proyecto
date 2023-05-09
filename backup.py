@@ -1,6 +1,3 @@
-# from Crypto.Cipher import AES
-# from Crypto.Protocol.KDF import PBKDF2
-# from Crypto.Random import get_random_bytes
 import os, sys
 import configparser
 import shutil
