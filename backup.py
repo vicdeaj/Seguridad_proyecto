@@ -22,7 +22,7 @@ def make_tarfile(output_filename, s_dir):
 def make_tarfile_incremental(output_filename, s_dir, reference_filename):
     archivos_vistos = set()
     timestamp_ref_backup = int(reference_filename.split("/")[4].split(".")[0])
-    print(timestamp_ref_backup)  # timestamp de la backup de referencia
+    # print(timestamp_ref_backup)  # timestamp de la backup de referencia
     with tarfile.open(output_filename, "w:gz") as tar:
         for file in glob.glob(os.path.join(s_dir, '**'), recursive=True):
             if os.path.isfile(file):
@@ -33,7 +33,7 @@ def make_tarfile_incremental(output_filename, s_dir, reference_filename):
 
         # decipher de tarfile
         x = subprocess.run(
-            ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-d", "-o", tmp_dir + "/tmp.tar", reference_filename])
+            ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-d", "-o", tmp_dir + "/tmp.tar", reference_filename],stderr=subprocess.DEVNULL)
         # mirar si cada archivo esta en archivos_vistos
         archivos_a_eliminar = ""
         with tarfile.open(tmp_dir+"/tmp.tar", "r:gz") as reftar:
@@ -48,10 +48,10 @@ def make_tarfile_incremental(output_filename, s_dir, reference_filename):
             # archivos en backup - archivos vistos -> al nuevo archivo
 
         # añadimos ese archivo al
-            file_to_write = io.BytesIO(archivos_a_eliminar.encode())
-            tarinfo = tarfile.TarInfo(".archivos_a_eliminar")
-            tarinfo.size = len(file_to_write.getvalue())
-            tar.addfile(tarinfo, file_to_write)
+        file_to_write = io.BytesIO(archivos_a_eliminar.encode())
+        tarinfo = tarfile.TarInfo(".archivos_a_eliminar")
+        tarinfo.size = len(file_to_write.getvalue())
+        tar.addfile(tarinfo, file_to_write)
 
 
 # coje dos directorios, y hace una backup del primero en el segundo
@@ -61,24 +61,24 @@ def crear_backup_completa(source, destination):
     make_tarfile(path_tarfile, source)
     path_encriptado = path_tarfile + ".gpg"
     x = subprocess.run(
-        ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-c", "-o", path_encriptado, path_tarfile])
+        ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-c", "-o", path_encriptado, path_tarfile],stderr=subprocess.DEVNULL)
     os.rename(path_encriptado, destination + "/" + nombre_backup)
 
 
 def crear_backup_incremental(source, destination, refs):
-    if os.listdir(refs) == 0:
+    if len(os.listdir(refs)) == 0:
         crear_backup_completa(source, refs)
 
     # archivo de backup semanal
     nombre_archivo_referencia = max(os.listdir(refs))
     archivo_referencia = refs + "/" + nombre_archivo_referencia
 
-    nombre_backup = "{}_{}.tar.gpg".format(int(time.time()), nombre_archivo_referencia)
+    nombre_backup = "{}_{}".format(int(time.time()), nombre_archivo_referencia)
     path_tarfile = tmp_dir + "/" + "out.tar.gz"
     make_tarfile_incremental(path_tarfile, source, archivo_referencia)
     path_encriptado = path_tarfile + ".gpg"
     x = subprocess.run(
-        ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-c", "-o", path_encriptado, path_tarfile])
+        ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-c", "-o", path_encriptado, path_tarfile],stderr=subprocess.DEVNULL)
     os.rename(path_encriptado, destination + "/" + nombre_backup)
 
 
@@ -181,6 +181,4 @@ if tipo_copia == "-m":
     exit(0)
 
 print("Argumento mal utilizado, modo de uso: Primer parámetro(-w, -d, -m)")
-exit(1)
-
 shutil.rmtree(tmp_dir)

@@ -32,7 +32,7 @@ while True:
         print(f"{contador} : {mod_time} : {archivo[1]}")
         contador += 1
 
-    copia_restaurar = input("Elige una copia para restaurar:\n")
+    copia_restaurar = input("Elige una copia para restaurar:")
     if copia_restaurar.isdigit() and 0 <= int(copia_restaurar) <= contador:
         idCopia = int(copia_restaurar)
         break
@@ -62,7 +62,7 @@ os.mkdir(tmp_dir)
 def restaurar_backup_completa(pathBackup):
     pathTar = tmp_dir + "/tmp.tar"
     subprocess.run(
-        ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-d", "-o", pathTar, pathBackup])
+        ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-d", "-o", pathTar, pathBackup],stderr=subprocess.DEVNULL)
     with tarfile.open(pathTar, mode="r:gz") as tar:
         tar.extractall(path=os.path.split(restore_dir)[0])
 
@@ -70,19 +70,21 @@ def restaurar_backup_completa(pathBackup):
 def restaurar_backup_incremental(pathBackup):
     pathTar = tmp_dir + "/tmp2.tar"
     subprocess.run(
-        ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-d", "-o", pathTar, pathBackup])
+        ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-d", "-o", pathTar, pathBackup],stderr=subprocess.DEVNULL)
     with tarfile.open(pathTar, mode="r:gz") as tar:
         for file_ in tar:
             try:
-                tar.extract(file_)
+                tar.extract(file_, path=os.path.split(restore_dir)[0])
             except IOError:
                 os.remove(file_.name)
-                tar.extract(file_)
-        to_remove = open(restore_dir + "/.archivos_a_eliminar", "r").readlines()
-        os.remove(restore_dir + "/.archivos_a_eliminar")
-
-        for l in to_remove:
-            os.remove(restore_dir + "/" +l)
+                tar.extract(file_, path=os.path.split(restore_dir)[0])
+        try:
+            to_remove = open(os.path.split(restore_dir)[0] + "/.archivos_a_eliminar", "r").readlines()
+            os.remove(os.path.split(restore_dir)[0] + "/.archivos_a_eliminar")
+            for l in to_remove:
+                os.remove(os.path.split(restore_dir)[0] + "/" +l.strip())
+        except FileNotFoundError:
+            pass
 
 
 
