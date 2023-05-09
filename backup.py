@@ -9,6 +9,7 @@ import uuid
 import subprocess
 import time
 import glob
+import io
 
 
 # backup semanal
@@ -25,18 +26,32 @@ def make_tarfile_incremental(output_filename, s_dir, reference_filename):
     with tarfile.open(output_filename, "w:gz") as tar:
         for file in glob.glob(os.path.join(s_dir, '**'), recursive=True):
             if os.path.isfile(file):
-                archivos_vistos.add(file) # luego lo usaremos para ver que archivos han sido eliminados
+                saved_path = os.path.basename(s_dir) + "/" + os.path.relpath(file,s_dir)
+                archivos_vistos.add(saved_path) # luego lo usaremos para ver que archivos han sido eliminados
                 if int(os.path.getmtime(file)) > timestamp_ref_backup:
-                    tar.add(file, arcname=os.path.relpath(file,s_dir))  # fecha modificacion del archivo
+                    tar.add(file, arcname=saved_path)
 
-    # decipher de tarfile
-    x = subprocess.run(
-        ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-c", "-o", path_to_encrypted, path_tarfile]) # esto hay que arreglarlo para descifrar
-    # mirar si cada archivo esta en archivos_vistos
-    with tarfile.open(reference_filename, "r:gz"):
+        # decipher de tarfile
+        x = subprocess.run(
+            ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-d", "-o", tmp_dir + "/tmp.tar", reference_filename])
+        # mirar si cada archivo esta en archivos_vistos
+        archivos_a_eliminar = ""
+        with tarfile.open(tmp_dir+"/tmp.tar", "r:gz") as reftar:
+            archivos_en_backup = reftar.getmembers()
+        for a in archivos_en_backup:
+            if a.isfile():
+                a = a.path
+                if a not in archivos_vistos:
+                    archivos_a_eliminar += a
+                    archivos_a_eliminar += "\n"
+                    # añadimos al printeo
+            # archivos en backup - archivos vistos -> al nuevo archivo
 
-    # si no esta en archivos_vistos lo añadimos a un archivo ccon la lista de archivos eliminados
-    # añadimos ese archivo al
+        # añadimos ese archivo al
+            file_to_write = io.BytesIO(archivos_a_eliminar.encode())
+            tarinfo = tarfile.TarInfo(".archivos_a_eliminar")
+            tarinfo.size = len(file_to_write.getvalue())
+            tar.addfile(tarinfo, file_to_write)
 
 
 # coje dos directorios, y hace una backup del primero en el segundo
