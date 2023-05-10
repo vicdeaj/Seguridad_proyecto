@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os, sys
 import configparser
 import shutil
@@ -7,9 +8,6 @@ import subprocess
 import time
 import glob
 import io
-
-
-# backup semanal
 
 def make_tarfile(output_filename, s_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
@@ -33,8 +31,13 @@ def make_tarfile_incremental(output_filename, s_dir, reference_filename):
             ["gpg", "--batch", "--no-symkey-cache", "--passphrase", password, "-d", "-o", tmp_dir + "/tmp.tar", reference_filename],stderr=subprocess.DEVNULL)
         # mirar si cada archivo esta en archivos_vistos
         archivos_a_eliminar = ""
-        with tarfile.open(tmp_dir+"/tmp.tar", "r:gz") as reftar:
-            archivos_en_backup = reftar.getmembers()
+        try:
+            with tarfile.open(tmp_dir+"/tmp.tar", "r:gz") as reftar:
+                archivos_en_backup = reftar.getmembers()
+        except FileNotFoundError:
+            print("Archivo de referencia no se pudo descencriptar, has cambiado la contraseña?")
+            shutil.rmtree(tmp_dir)
+            exit(-1)
         for a in archivos_en_backup:
             if a.isfile():
                 a = a.path
