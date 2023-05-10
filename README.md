@@ -1,5 +1,5 @@
 # Prerequisites
-sudo apt install gpg, python,crontab \
+sudo apt install gpg, python,crontab
 
 
 # Installation
