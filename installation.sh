@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Bienvenidda a Backup Script Installation Utility Wizard"
+echo "Benvinguts a Backup Script Installation Utility Wizard"
 echo "Despuse de la instalación, puedes modificar los ajustes en: ~/.backupScript/backupConfig"
 
 echo "Carpeta que se va a resguardar: (/tmp/source)"
