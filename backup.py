@@ -107,7 +107,7 @@ def check_structura_backup(path):
 
 
 # configparser
-configfile = "~/.backupconfig"
+configfile = "~/.backupScript/backupConfig"
 config = configparser.ConfigParser()
 config.read(os.path.expanduser(configfile))
 

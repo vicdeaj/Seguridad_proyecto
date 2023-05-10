@@ -9,7 +9,7 @@ import tarfile
 
 
 #config
-configfile = "~/.backupconfig"
+configfile = "~/.backupScript/backupConfig"
 config = configparser.ConfigParser()
 config.read(os.path.expanduser(configfile))
 
