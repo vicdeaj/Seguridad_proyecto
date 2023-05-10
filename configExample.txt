@@ -1,4 +1,4 @@
 [BasicConfig]
-backup_dir = /tmp/backup
-source_dir = /tmp/source
-password = CHANGEME
+backup_dir=/tmp/backup
+source_dir=/tmp/source
+password=CHANGEME
