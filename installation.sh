@@ -18,6 +18,7 @@ rm -rf ~/.backupScript
 mkdir ~/.backupScript
 mkdir ~/.backupScript/bin
 
+echo "Descargando archivos ..."
 # download files
 wget https://github.com/vicdeaj/Seguridad_proyecto/raw/master/backup.py -P ~/.backupScript/bin 2> /dev/null
 mv ~/.backupScript/bin/backup.py ~/.backupScript/bin/backup
@@ -68,6 +69,6 @@ read anadir_path
 
 if [[ -z "$anadir_path" || "$anadir_path" == "Y" ]]; then
   echo 'export PATH="$HOME/.backupScript/bin:$PATH"' >> "$HOME/.bashrc"
+  echo "Ejecuta source ~/.bashrc para añadirlo al path de esta sesion"
 fi
 
-echo "Ejecuta source ~/.bashrc para añadirlo al path de esta sesion"
